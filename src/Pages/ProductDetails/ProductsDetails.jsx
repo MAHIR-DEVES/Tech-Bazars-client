@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   FaStar,
   FaRegStar,
@@ -7,7 +7,9 @@ import {
   FaHeart,
   FaShare,
 } from 'react-icons/fa';
+import { IoMdArrowRoundBack } from 'react-icons/io';
 import axios from 'axios';
+import BuyNowModal from '../../Components/Modal/BuyNowModal';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -16,8 +18,10 @@ const ProductDetails = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [imageHeight, setImageHeight] = useState('auto');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const rightContentRef = useRef(null);
   const imageContainerRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -296,19 +300,28 @@ const ProductDetails = () => {
               </button>
             </div>
             <button
+              onClick={() => setIsModalOpen(true)}
               className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3 px-6 rounded-md font-medium transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
               disabled={stock <= 0}
             >
               <FaShoppingCart className="mr-2" />
-              {stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+              {stock > 0 ? 'Buy Now' : 'Out of Stock'}
             </button>
             <button
-              className="flex-1 bg-gray-800 hover:bg-gray-900 text-white py-3 px-6 rounded-md font-medium transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              onClick={() => navigate(-1)}
+              className="flex-1 flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-900 text-white py-3 px-6 rounded-md font-medium transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               disabled={stock <= 0}
             >
-              Buy Now
+              <IoMdArrowRoundBack size={20} /> Back
             </button>
           </div>
+
+          <BuyNowModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            product={product}
+            quantity={quantity}
+          />
 
           {/* Action Icons */}
           <div className="flex gap-4">
