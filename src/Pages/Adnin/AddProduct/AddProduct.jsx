@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 import { FaUpload, FaPlus, FaMinus, FaTrash } from 'react-icons/fa';
 
 const AddProduct = () => {
@@ -76,14 +77,38 @@ const AddProduct = () => {
     }));
   };
 
-  const handleImageUpload = e => {
-    const files = Array.from(e.target.files);
-    const newPreviews = files.map(file => URL.createObjectURL(file));
-    setImagePreviews(prev => [...prev, ...newPreviews]);
-    setProductData(prev => ({
-      ...prev,
-      images: [...prev.images, ...files],
-    }));
+  const handleImageUpload = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const data = new FormData();
+    data.append('file', file);
+    data.append('upload_preset', 'Tech_Bazar');
+
+    try {
+      const res = await fetch(
+        'https://api.cloudinary.com/v1_1/dkfxcjixb/image/upload',
+        {
+          method: 'POST',
+          body: data,
+        }
+      );
+
+      const urlData = await res.json();
+
+      if (urlData.secure_url) {
+        // images state update
+        setProductData(prev => ({
+          ...prev,
+          images: [...prev.images, urlData.secure_url],
+        }));
+
+        // for image preview
+        setImagePreviews(prev => [...prev, urlData.secure_url]);
+      }
+    } catch (err) {
+      console.error('Upload failed', err);
+    }
   };
 
   const removeImage = index => {
@@ -96,11 +121,44 @@ const AddProduct = () => {
     }));
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    console.log('Product Data:', productData);
-    // Handle form submission here
-    alert('Product added successfully!');
+
+    try {
+      const res = await fetch('http://localhost:5000/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productData),
+      });
+
+      if (res.ok) {
+        Swal.fire({
+          title: 'Drag me!',
+          icon: 'success',
+          draggable: true,
+        });
+
+        setProductData({
+          name: '',
+          category: '',
+          price: '',
+          discountPrice: '',
+          stock: '',
+          description: '',
+          brand: '',
+          sku: '',
+          warranty: '',
+          specifications: [''],
+          images: [],
+        });
+        setImagePreviews([]);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Something went wrong!');
+    }
   };
 
   const generateSKU = () => {
@@ -395,7 +453,7 @@ const AddProduct = () => {
               type="submit"
               className="px-6 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              Add Product
+              Add Product .
             </button>
           </div>
         </div>

@@ -63,17 +63,18 @@ const Statistics = () => {
     },
   ];
 
-  // Top selling products
-  const topProducts = [
-    { name: 'Gaming Laptop', sales: 124, revenue: 1248000 },
-    { name: 'Wireless Headphones', sales: 89, revenue: 267000 },
-    { name: 'Mechanical Keyboard', sales: 76, revenue: 228000 },
-    { name: 'Gaming Mouse', sales: 68, revenue: 136000 },
-    { name: 'Monitor 27"', sales: 45, revenue: 675000 },
+  // Sales data for bar chart
+  const salesData = [
+    { month: 'Jan', sales: 1200000, orders: 240 },
+    { month: 'Feb', sales: 1800000, orders: 320 },
+    { month: 'Mar', sales: 1500000, orders: 280 },
+    { month: 'Apr', sales: 2100000, orders: 380 },
+    { month: 'May', sales: 1900000, orders: 350 },
+    { month: 'Jun', sales: 2548900, orders: 448 },
   ];
 
   const StatCard = ({ title, value, icon, change, isPositive }) => (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
@@ -99,8 +100,107 @@ const Statistics = () => {
     </div>
   );
 
+  // Enhanced Bar Chart Component
+  const BarChart = () => {
+    const maxSales = Math.max(...salesData.map(item => item.sales));
+    const maxOrders = Math.max(...salesData.map(item => item.orders));
+
+    return (
+      <div className="bg-white rounded-xl shadow-md p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-gray-800">
+            Monthly Sales Performance
+          </h2>
+          <div className="flex space-x-4">
+            <button className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-full font-medium hover:bg-blue-200 transition-colors">
+              Sales
+            </button>
+            <button className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors">
+              Orders
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-end justify-between h-64 px-4 pb-4">
+          {salesData.map((item, index) => {
+            const salesHeight = (item.sales / maxSales) * 100;
+            const ordersHeight = (item.orders / maxOrders) * 100;
+
+            return (
+              <div
+                key={index}
+                className="flex flex-col items-center flex-1 mx-1 group relative"
+              >
+                {/* Combined bar with sales and orders */}
+                <div className="w-10 relative mb-2" style={{ height: '180px' }}>
+                  {/* Sales Bar (Primary) */}
+                  <div
+                    className="w-10 absolute bottom-0 bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg transition-all duration-300 hover:from-blue-600 hover:to-blue-500 group-hover:w-12"
+                    style={{ height: `${salesHeight}%` }}
+                  >
+                    <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                      ₹{(item.sales / 100000).toFixed(1)}L
+                    </div>
+                  </div>
+
+                  {/* Orders Bar (Secondary) */}
+                  <div
+                    className="w-6 absolute bottom-0 left-1/2 transform -translate-x-1/2 bg-gradient-to-t from-green-400 to-green-300 rounded-t-lg transition-all duration-300 hover:from-green-500 hover:to-green-400 group-hover:w-8"
+                    style={{ height: `${ordersHeight}%` }}
+                  >
+                    <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                      {item.orders} orders
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-sm font-medium text-gray-600 mt-2">
+                  {item.month}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex justify-center mt-6 space-x-8">
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-gradient-to-t from-blue-500 to-blue-400 rounded mr-2"></div>
+            <span className="text-sm text-gray-600">Sales (₹)</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-gradient-to-t from-green-400 to-green-300 rounded mr-2"></div>
+            <span className="text-sm text-gray-600">Orders</span>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
+          <div className="text-sm text-gray-500">
+            Last updated: Today, 10:30 AM
+          </div>
+          <button className="text-blue-600 text-sm font-medium hover:text-blue-800 flex items-center">
+            View detailed report
+            <svg
+              className="w-4 h-4 ml-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gray-50 min-h-screen">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
         <p className="text-gray-600">
@@ -142,12 +242,12 @@ const Statistics = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Recent Orders */}
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800">
               Recent Orders
             </h2>
-            <button className="text-blue-600 text-sm font-medium">
+            <button className="text-blue-600 text-sm font-medium hover:text-blue-800">
               View All
             </button>
           </div>
@@ -171,10 +271,10 @@ const Statistics = () => {
               </thead>
               <tbody>
                 {recentOrders.map(order => (
-                  <tr key={order.id} className="border-b">
-                    <td className="py-3 text-sm">{order.id}</td>
+                  <tr key={order.id} className="border-b hover:bg-gray-50">
+                    <td className="py-3 text-sm font-medium">{order.id}</td>
                     <td className="py-3 text-sm">{order.customer}</td>
-                    <td className="py-3 text-sm">
+                    <td className="py-3 text-sm font-semibold">
                       ₹{order.amount.toLocaleString()}
                     </td>
                     <td className="py-3">
@@ -197,76 +297,13 @@ const Statistics = () => {
           </div>
         </div>
 
-        {/* Top Selling Products */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Top Selling Products
-            </h2>
-            <button className="text-blue-600 text-sm font-medium">
-              View All
-            </button>
-          </div>
-          <div className="space-y-4">
-            {topProducts.map((product, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
-                    <FaBox className="w-5 h-5 text-gray-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">
-                      {product.name}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      {product.sales} sold
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-800">
-                    ₹{product.revenue.toLocaleString()}
-                  </p>
-                  <p className="text-xs text-green-600">+12%</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Sales Chart (Placeholder) */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">
-            Sales Overview
-          </h2>
-          <div className="flex space-x-2">
-            <button className="px-3 py-1 bg-blue-100 text-blue-600 rounded-md text-sm">
-              Monthly
-            </button>
-            <button className="px-3 py-1 text-gray-600 rounded-md text-sm">
-              Quarterly
-            </button>
-            <button className="px-3 py-1 text-gray-600 rounded-md text-sm">
-              Yearly
-            </button>
-          </div>
-        </div>
-        <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-          <div className="text-center">
-            <FaChartLine className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-            <p className="text-gray-600">Sales chart will be displayed here</p>
-            <p className="text-sm text-gray-500">
-              Integrate with Chart.js or similar library
-            </p>
-          </div>
-        </div>
+        {/* Enhanced Bar Chart */}
+        <BarChart />
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -282,7 +319,7 @@ const Statistics = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -296,7 +333,7 @@ const Statistics = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
