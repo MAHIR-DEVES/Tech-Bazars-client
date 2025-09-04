@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import {
   FaSearch,
   FaEye,
@@ -10,143 +11,35 @@ import {
   FaTimesCircle,
   FaTruck,
 } from 'react-icons/fa';
+import OrderTable from './OrderTable';
 
 const Order = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [orders, setOrders] = useState([]);
 
-  // Sample order data
-  const orders = [
-    {
-      id: 'ORD-001',
-      customer: 'John Doe',
-      email: 'john@example.com',
-      date: '2024-01-15',
-      amount: 12500,
-      status: 'delivered',
-      items: 3,
-      payment: 'Paid',
-    },
-    {
-      id: 'ORD-002',
-      customer: 'Jane Smith',
-      email: 'jane@example.com',
-      date: '2024-01-15',
-      amount: 8900,
-      status: 'processing',
-      items: 2,
-      payment: 'Paid',
-    },
-    {
-      id: 'ORD-003',
-      customer: 'Robert Johnson',
-      email: 'robert@example.com',
-      date: '2024-01-14',
-      amount: 15600,
-      status: 'shipped',
-      items: 4,
-      payment: 'Paid',
-    },
-    {
-      id: 'ORD-004',
-      customer: 'Sarah Wilson',
-      email: 'sarah@example.com',
-      date: '2024-01-14',
-      amount: 7200,
-      status: 'delivered',
-      items: 1,
-      payment: 'Paid',
-    },
-    {
-      id: 'ORD-005',
-      customer: 'Mike Brown',
-      email: 'mike@example.com',
-      date: '2024-01-13',
-      amount: 18900,
-      status: 'pending',
-      items: 5,
-      payment: 'Pending',
-    },
-    {
-      id: 'ORD-006',
-      customer: 'Emily Davis',
-      email: 'emily@example.com',
-      date: '2024-01-13',
-      amount: 11200,
-      status: 'cancelled',
-      items: 2,
-      payment: 'Refunded',
-    },
-    {
-      id: 'ORD-007',
-      customer: 'David Miller',
-      email: 'david@example.com',
-      date: '2024-01-12',
-      amount: 23400,
-      status: 'shipped',
-      items: 6,
-      payment: 'Paid',
-    },
-    {
-      id: 'ORD-008',
-      customer: 'Lisa Anderson',
-      email: 'lisa@example.com',
-      date: '2024-01-12',
-      amount: 6700,
-      status: 'processing',
-      items: 2,
-      payment: 'Paid',
-    },
-  ];
+  useEffect(() => {
+    const getOrders = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/get-orders');
+        setOrders(res.data);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+      }
+    };
+    getOrders();
+  }, []);
 
   // Filter orders based on status and search term
   const filteredOrders = orders.filter(order => {
     const matchesStatus =
       filterStatus === 'all' || order.status === filterStatus;
     const matchesSearch =
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.email.toLowerCase().includes(searchTerm.toLowerCase());
+      order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.userEmail.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
   });
-
-  const getStatusBadge = status => {
-    const statusConfig = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', icon: FaShoppingCart },
-      processing: { color: 'bg-blue-100 text-blue-800', icon: FaEdit },
-      shipped: { color: 'bg-purple-100 text-purple-800', icon: FaTruck },
-      delivered: { color: 'bg-green-100 text-green-800', icon: FaCheckCircle },
-      cancelled: { color: 'bg-red-100 text-red-800', icon: FaTimesCircle },
-    };
-
-    const { color, icon: Icon } = statusConfig[status] || {
-      color: 'bg-gray-100 text-gray-800',
-      icon: FaShoppingCart,
-    };
-
-    return (
-      <span
-        className={`px-3 py-1 rounded-full text-xs font-medium ${color} flex items-center gap-1`}
-      >
-        <Icon className="w-3 h-3" />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    );
-  };
-
-  const getPaymentBadge = payment => {
-    const color =
-      payment === 'Paid'
-        ? 'bg-green-100 text-green-800'
-        : payment === 'Pending'
-        ? 'bg-yellow-100 text-yellow-800'
-        : 'bg-red-100 text-red-800';
-    return (
-      <span className={`px-2 py-1 rounded-md text-xs font-medium ${color}`}>
-        {payment}
-      </span>
-    );
-  };
 
   return (
     <div className="p-6">
@@ -258,7 +151,7 @@ const Order = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Order ID
+                  Image
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Customer
@@ -275,91 +168,35 @@ const Order = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Payment
+                <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Update Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
-                </th>
+                </th> */}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredOrders.map(order => (
-                <tr key={order.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {order.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {order.customer}
-                      </div>
-                      <div className="text-sm text-gray-500">{order.email}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {order.date}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ₹{order.amount.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {order.items}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(order.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getPaymentBadge(order.payment)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900">
-                        <FaEye className="w-4 h-4" />
-                      </button>
-                      <button className="text-green-600 hover:text-green-900">
-                        <FaEdit className="w-4 h-4" />
-                      </button>
-                      <button className="text-red-600 hover:text-red-900">
-                        <FaTrash className="w-4 h-4" />
-                      </button>
-                    </div>
+              {filteredOrders.length > 0 ? (
+                filteredOrders.map(order => (
+                  <OrderTable
+                    key={order._id}
+                    order={order}
+                    setOrders={setOrders}
+                  ></OrderTable>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={8} className="text-center py-8">
+                    <FaSearch className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-600">
+                      No orders found matching your criteria
+                    </p>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
-        </div>
-
-        {filteredOrders.length === 0 && (
-          <div className="text-center py-8">
-            <FaSearch className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-            <p className="text-gray-600">
-              No orders found matching your criteria
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Pagination */}
-      <div className="bg-white rounded-lg shadow-md p-4 mt-6">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-700">
-            Showing <span className="font-medium">1</span> to{' '}
-            <span className="font-medium">8</span> of{' '}
-            <span className="font-medium">{filteredOrders.length}</span> results
-          </div>
-          <div className="flex space-x-2">
-            <button className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-              Previous
-            </button>
-            <button className="px-3 py-1 border border-blue-500 bg-blue-500 text-white rounded-md text-sm font-medium">
-              1
-            </button>
-            <button className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-              Next
-            </button>
-          </div>
         </div>
       </div>
     </div>

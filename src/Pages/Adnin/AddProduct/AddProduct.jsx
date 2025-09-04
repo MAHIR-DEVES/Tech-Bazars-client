@@ -162,7 +162,7 @@ const AddProduct = () => {
   };
 
   const generateSKU = () => {
-    const sku = `SKU-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    const sku = `SKU- ${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
     setProductData(prev => ({ ...prev, sku }));
   };
 
@@ -370,7 +370,7 @@ const AddProduct = () => {
                       <div key={index} className="relative">
                         <img
                           src={preview}
-                          alt={`Preview ${index}`}
+                          alt={`Preview  ${index}`}
                           className="w-20 h-20 object-cover rounded-md"
                         />
                         <button

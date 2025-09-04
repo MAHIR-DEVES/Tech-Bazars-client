@@ -1,120 +1,37 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 import {
   FaSearch,
-  FaEdit,
+  // FaEdit,
   FaTrash,
   FaEye,
   FaPlus,
-  FaFilter,
   FaBox,
-  FaSort,
 } from 'react-icons/fa';
+import ProductModal from '../../../Components/Modal/ViewModel';
 
 const AllProducts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortBy, setSortBy] = useState('name');
+  const [products, setProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Sample product data
-  const products = [
-    {
-      id: 1,
-      name: 'MacBook Pro 16"',
-      category: 'Laptops',
-      price: 199999,
-      stock: 15,
-      status: 'active',
-      sku: 'MBP16-2023',
-      sales: 45,
-      image:
-        'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&h=200&fit=crop',
-    },
-    {
-      id: 2,
-      name: 'iPhone 15 Pro',
-      category: 'Smartphones',
-      price: 129999,
-      stock: 0,
-      status: 'out-of-stock',
-      sku: 'IP15P-2023',
-      sales: 78,
-      image:
-        'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=300&h=200&fit=crop',
-    },
-    {
-      id: 3,
-      name: 'Samsung OLED TV',
-      category: 'TVs',
-      price: 89999,
-      stock: 8,
-      status: 'active',
-      sku: 'SMS-OLED65',
-      sales: 23,
-      image:
-        'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=300&h=200&fit=crop',
-    },
-    {
-      id: 4,
-      name: 'Sony Headphones',
-      category: 'Audio',
-      price: 24999,
-      stock: 25,
-      status: 'active',
-      sku: 'SNY-WH1000',
-      sales: 156,
-      image:
-        'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=200&fit=crop',
-    },
-    {
-      id: 5,
-      name: 'Gaming Keyboard',
-      category: 'Accessories',
-      price: 8999,
-      stock: 5,
-      status: 'low-stock',
-      sku: 'GM-KB2023',
-      sales: 89,
-      image:
-        'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=300&h=200&fit=crop',
-    },
-    {
-      id: 6,
-      name: 'Wireless Mouse',
-      category: 'Accessories',
-      price: 2999,
-      stock: 42,
-      status: 'active',
-      sku: 'WL-MS2023',
-      sales: 203,
-      image:
-        'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300&h=200&fit=crop',
-    },
-    {
-      id: 7,
-      name: '4K Monitor',
-      category: 'Monitors',
-      price: 45999,
-      stock: 3,
-      status: 'low-stock',
-      sku: '4K-MON27',
-      sales: 34,
-      image:
-        'https://images.unsplash.com/photo-1643330683233-ff2ac89b002c?w=300&h=200&fit=crop',
-    },
-    {
-      id: 8,
-      name: 'Smart Watch',
-      category: 'Wearables',
-      price: 34999,
-      stock: 18,
-      status: 'active',
-      sku: 'SM-WTCH4',
-      sales: 67,
-      image:
-        'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=200&fit=crop',
-    },
-  ];
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/get-products');
+        setProducts(res.data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+
+    getProducts();
+  }, []);
 
   const categories = [
     'all',
@@ -125,39 +42,61 @@ const AllProducts = () => {
     'Accessories',
     'Monitors',
     'Wearables',
+    'Gaming',
   ];
   const statuses = ['all', 'active', 'out-of-stock', 'low-stock'];
 
-  // Filter and sort products
+  // 🟢 Filter and sort products
   const filteredProducts = products
     .filter(product => {
+      const name = product.name ? product.name.toLowerCase() : '';
+      const sku = product.sku ? product.sku.toLowerCase() : '';
       const matchesSearch =
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.sku.toLowerCase().includes(searchTerm.toLowerCase());
+        name.includes(searchTerm.toLowerCase()) ||
+        sku.includes(searchTerm.toLowerCase());
+
       const matchesCategory =
         filterCategory === 'all' || product.category === filterCategory;
-      const matchesStatus =
-        filterStatus === 'all' || product.status === filterStatus;
+
+      // 🟢 calculate status based on stock
+      let status = 'active';
+      const stock = Number(product.stock) || 0;
+      if (stock === 0) status = 'out-of-stock';
+      else if (stock < 5) status = 'low-stock';
+
+      const matchesStatus = filterStatus === 'all' || status === filterStatus;
 
       return matchesSearch && matchesCategory && matchesStatus;
     })
     .sort((a, b) => {
+      const priceA = Number(a.price) || 0;
+      const priceB = Number(b.price) || 0;
+      const stockA = Number(a.stock) || 0;
+      const stockB = Number(b.stock) || 0;
+      const salesA = Number(a.sales) || 0;
+      const salesB = Number(b.sales) || 0;
+
       switch (sortBy) {
         case 'price-high':
-          return b.price - a.price;
+          return priceB - priceA;
         case 'price-low':
-          return a.price - b.price;
+          return priceA - priceB;
         case 'sales':
-          return b.sales - a.sales;
+          return salesB - salesA;
         case 'stock':
-          return b.stock - a.stock;
+          return stockB - stockA;
         case 'name':
         default:
           return a.name.localeCompare(b.name);
       }
     });
 
-  const getStatusBadge = status => {
+  const getStatusBadge = stockValue => {
+    const stock = Number(stockValue) || 0;
+    let status = 'active';
+    if (stock === 0) status = 'out-of-stock';
+    else if (stock < 5) status = 'low-stock';
+
     const statusConfig = {
       active: { color: 'bg-green-100 text-green-800', text: 'In Stock' },
       'out-of-stock': {
@@ -170,11 +109,7 @@ const AllProducts = () => {
       },
     };
 
-    const { color, text } = statusConfig[status] || {
-      color: 'bg-gray-100 text-gray-800',
-      text: status,
-    };
-
+    const { color, text } = statusConfig[status];
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>
         {text}
@@ -182,13 +117,47 @@ const AllProducts = () => {
     );
   };
 
-  const handleDelete = productId => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      console.log('Deleting product:', productId);
-      // Add your delete logic here
-    }
+  const handleDelete = async id => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+    }).then(async result => {
+      if (result.isConfirmed) {
+        try {
+          // API request
+          const res = await axios.delete(
+            `http://localhost:5000/products/${id}`
+          );
+
+          if (res.data.deletedCount > 0) {
+            Swal.fire('Deleted!', 'Your product has been deleted.', 'success');
+
+            // state থেকে remove করে UI আপডেট করো
+            setProducts(prevProducts =>
+              prevProducts.filter(product => product._id !== id)
+            );
+          }
+        } catch (error) {
+          console.error(error);
+          Swal.fire('Error!', 'Something went wrong.', 'error');
+        }
+      }
+    });
+  };
+  const handleView = product => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
   };
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
+  };
   return (
     <div className="p-6">
       {/* Header */}
@@ -203,68 +172,10 @@ const AllProducts = () => {
         </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Products</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {products.length}
-              </p>
-            </div>
-            <div className="p-2 bg-blue-100 rounded-full">
-              <FaBox className="w-5 h-5 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Out of Stock</p>
-              <p className="text-2xl font-bold text-red-600">
-                {products.filter(p => p.status === 'out-of-stock').length}
-              </p>
-            </div>
-            <div className="p-2 bg-red-100 rounded-full">
-              <FaBox className="w-5 h-5 text-red-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Low Stock</p>
-              <p className="text-2xl font-bold text-yellow-600">
-                {products.filter(p => p.status === 'low-stock').length}
-              </p>
-            </div>
-            <div className="p-2 bg-yellow-100 rounded-full">
-              <FaBox className="w-5 h-5 text-yellow-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Sales</p>
-              <p className="text-2xl font-bold text-green-600">
-                {products.reduce((total, product) => total + product.sales, 0)}
-              </p>
-            </div>
-            <div className="p-2 bg-green-100 rounded-full">
-              <FaBox className="w-5 h-5 text-green-600" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Filters and Search */}
       <div className="bg-white rounded-lg shadow-md p-4 mb-6">
         <div className="flex flex-col lg:flex-row gap-4 items-end">
+          {/* Search */}
           <div className="flex-1 w-full">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Search Products
@@ -283,6 +194,7 @@ const AllProducts = () => {
             </div>
           </div>
 
+          {/* Category */}
           <div className="w-full lg:w-auto">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Category
@@ -300,6 +212,7 @@ const AllProducts = () => {
             </select>
           </div>
 
+          {/* Status */}
           <div className="w-full lg:w-auto">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Status
@@ -323,6 +236,7 @@ const AllProducts = () => {
             </select>
           </div>
 
+          {/* Sort */}
           <div className="w-full lg:w-auto">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Sort By
@@ -342,7 +256,7 @@ const AllProducts = () => {
         </div>
       </div>
 
-      {/* Products Grid */}
+      {/* Products Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -360,9 +274,7 @@ const AllProducts = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Stock
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Sales
-                </th>
+
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
@@ -373,13 +285,13 @@ const AllProducts = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredProducts.map(product => (
-                <tr key={product.id} className="hover:bg-gray-50">
+                <tr key={product._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="h-10 w-10 flex-shrink-0">
                         <img
                           className="h-10 w-10 rounded-md object-cover"
-                          src={product.image}
+                          src={product.images?.[0]}
                           alt={product.name}
                         />
                       </div>
@@ -397,33 +309,36 @@ const AllProducts = () => {
                     {product.category}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ₹{product.price.toLocaleString()}
+                    ₹{Number(product.price).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {product.stock}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {product.sales}
-                  </td>
+
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(product.status)}
+                    {getStatusBadge(product.stock)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900">
+                      <button
+                        className="text-blue-600 hover:text-blue-900"
+                        onClick={() => handleView(product)} // ✅ open modal
+                      >
                         <FaEye className="w-4 h-4" />
-                      </button>
-                      <button className="text-green-600 hover:text-green-900">
-                        <FaEdit className="w-4 h-4" />
                       </button>
                       <button
                         className="text-red-600 hover:text-red-900"
-                        onClick={() => handleDelete(product.id)}
+                        onClick={() => handleDelete(product._id)}
                       >
                         <FaTrash className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
+                  <ProductModal
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    product={selectedProduct}
+                  />
                 </tr>
               ))}
             </tbody>
@@ -441,29 +356,6 @@ const AllProducts = () => {
             </p>
           </div>
         )}
-      </div>
-
-      {/* Pagination */}
-      <div className="bg-white rounded-lg shadow-md p-4 mt-6">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-700">
-            Showing <span className="font-medium">1</span> to{' '}
-            <span className="font-medium">8</span> of{' '}
-            <span className="font-medium">{filteredProducts.length}</span>{' '}
-            products
-          </div>
-          <div className="flex space-x-2">
-            <button className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-              Previous
-            </button>
-            <button className="px-3 py-1 border border-blue-500 bg-blue-500 text-white rounded-md text-sm font-medium">
-              1
-            </button>
-            <button className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-              Next
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

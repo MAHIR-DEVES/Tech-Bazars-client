@@ -1,4 +1,3 @@
-import React from 'react';
 import Banner from '../../Components/Banner/Banner';
 import Products from '../../Components/Products/Products';
 import Contact from '../../Components/Contact/Contact';

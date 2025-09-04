@@ -12,7 +12,7 @@ import {
 const Footer = () => {
   return (
     <footer className="bg-gradient-to-r from-[#1D232A] to-[#2A3441] text-white pt-12 pb-6">
-      <div className="w-10/12 mx-auto">
+      <div className="sm:max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Company Info */}
           <div className="flex flex-col">

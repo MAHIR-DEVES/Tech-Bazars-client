@@ -9,6 +9,7 @@ import {
   FaPhone,
   FaMapMarkerAlt,
 } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const BuyNowModal = ({ isOpen, onClose, product, quantity }) => {
   const [userInfo, setUserInfo] = useState({
@@ -40,10 +41,11 @@ const BuyNowModal = ({ isOpen, onClose, product, quantity }) => {
         userEmail: userInfo.email,
         userPhone: userInfo.phone,
         userAddress: userInfo.address,
+        status: 'pending',
       };
 
       const res = await axios.post('http://localhost:5000/orders', orderData);
-      alert(res.data.message);
+      toast.success('Order Done ✅');
       onClose();
     } catch (err) {
       console.error(err);

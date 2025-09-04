@@ -7,6 +7,8 @@ import AdminRoot from '../Layout/Admin/AdminRoot';
 import AllProducts from '../Pages/Adnin/AllProducts/Allproducts';
 import AddProduct from '../Pages/Adnin/AddProduct/AddProduct';
 import Order from '../Pages/Adnin/Order/Order';
+import Search from '../Pages/Search/Search';
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -19,6 +21,11 @@ export const router = createBrowserRouter([
       {
         path: 'products-details/:id',
         Component: ProductsDetails,
+      },
+      {
+        // শুধু /search → query string থেকে value আসবে
+        path: 'search',
+        Component: Search,
       },
     ],
   },

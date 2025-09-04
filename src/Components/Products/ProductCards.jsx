@@ -62,7 +62,7 @@ const ProductCards = ({ product }) => {
           <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-50 transition-colors">
             <FaHeart className="text-gray-600 hover:text-red-500" size={14} />
           </button>
-          <Link to={`/products-details/${_id}`}>
+          <Link to={`/products-details/ ${_id}`}>
             <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-50 transition-colors">
               <FaEye className="text-gray-600 hover:text-blue-500" size={14} />
             </button>

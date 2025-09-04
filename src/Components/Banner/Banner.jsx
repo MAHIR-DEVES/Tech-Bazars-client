@@ -11,8 +11,10 @@ import BannerImg3 from '../../assets/banner3.png';
 import BannerImg4 from '../../assets/banner4.png';
 
 const Banner = () => {
+  const images = [BannerImg1, BannerImg2, BannerImg3, BannerImg4];
+
   return (
-    <div className=" w-full sm:w-10/12 mx-auto pt-2">
+    <div className="w-full sm:max-w-7xl mx-auto pt-2">
       <Swiper
         modules={[Pagination, Autoplay]}
         pagination={{ clickable: true }}
@@ -20,34 +22,15 @@ const Banner = () => {
         loop={true}
         className="sm:rounded-2xl"
       >
-        <SwiperSlide>
-          <img
-            className="w-full h-[200px] sm:h-[300px] md:h-[400px] lg:h-[500px] object-cover object-center sm:rounded-2xl"
-            src={BannerImg1}
-            alt="Banner 1"
-          />
-        </SwiperSlide>
-        <SwiperSlide>
-          <img
-            className="w-full h-[200px] sm:h-[300px] md:h-[400px] lg:h-[500px] object-cover object-center sm:rounded-2xl"
-            src={BannerImg2}
-            alt="Banner 2"
-          />
-        </SwiperSlide>
-        <SwiperSlide>
-          <img
-            className="w-full h-[200px] sm:h-[300px] md:h-[400px] lg:h-[500px] object-cover object-center sm:rounded-2xl"
-            src={BannerImg3}
-            alt="Banner 3"
-          />
-        </SwiperSlide>
-        <SwiperSlide>
-          <img
-            className="w-full h-[200px] sm:h-[300px] md:h-[400px] lg:h-[500px] object-cover object-center sm:rounded-2xl"
-            src={BannerImg4}
-            alt="Banner 4"
-          />
-        </SwiperSlide>
+        {images.map((img, index) => (
+          <SwiperSlide key={index}>
+            <img
+              className="w-full h-auto max-h-[500px] object-contain sm:object-cover object-center sm:rounded-2xl"
+              src={img}
+              alt={`Banner  ${index + 1}`}
+            />
+          </SwiperSlide>
+        ))}
       </Swiper>
     </div>
   );

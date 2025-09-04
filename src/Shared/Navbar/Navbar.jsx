@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   FaSearch,
   FaRegUser,
@@ -11,24 +11,30 @@ import {
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
-  // Handle search submission
   const handleSearch = e => {
     e.preventDefault();
-    console.log('Searching for:', searchQuery);
-    // Implement search functionality here
-    setSearchQuery('');
+    if (searchQuery.trim()) {
+      navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery('');
+    }
   };
 
   return (
     <nav className="bg-gradient-to-r from-[#1D232A] to-[#2A3441] shadow-lg sticky top-0 z-50 py-2">
-      <div className="w-full px-2 sm:w-10/12 mx-auto">
+      <div className="w-full px-2 sm:max-w-7xl mx-auto">
         {/* Main navbar content */}
         <div className="flex justify-between items-center py-3">
           {/* Logo and brand name */}
           <Link to="/" className="flex items-center space-x-2 text-white">
-            <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
-              <span className="text-[#1D232A] font-bold text-lg">TB</span>
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center relative shadow-lg">
+              {/* Inner circle for depth */}
+              <div className="w-8 h-8 bg-amber-300 rounded-full flex items-center justify-center">
+                <span className="text-[#1D232A] font-bold text-sm">TB</span>
+              </div>
+              {/* Shine effect */}
+              <div className="absolute top-1 left-1 w-2 h-2 bg-white bg-opacity-40 rounded-full"></div>
             </div>
             <div className="flex flex-col leading-none">
               <span className="font-bold sm:text-xl">Tech Bazars</span>

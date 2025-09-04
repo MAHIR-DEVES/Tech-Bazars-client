@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   FaStar,
   FaRegStar,
@@ -17,10 +17,9 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [imageHeight, setImageHeight] = useState('auto');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const rightContentRef = useRef(null);
-  const imageContainerRef = useRef(null);
+  const [products, setProducts] = useState([]);
+  console.log(products);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,44 +39,23 @@ const ProductDetails = () => {
     fetchProduct();
   }, [id]);
 
-  // Related products
-  const relatedProducts = [
-    {
-      id: 1,
-      name: 'Logitech F310 Gamepad USB port',
-      description: 'Precision from two analog sticks with...',
-      price: '1,900',
-      image:
-        'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=200&h=200&fit=crop',
-    },
-    {
-      id: 2,
-      name: 'Rapco V600 Electric Vibration Gamepad',
-      price: '2,000',
-      image:
-        'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=200&h=200&fit=crop',
-    },
-    {
-      id: 3,
-      name: 'XIGMATEK AIR-KILLER PRO ARCTIC AIO CPU COOLER',
-      price: '2,800',
-      image:
-        'https://images.unsplash.com/photo-1586074299757-d8956365c5d0?w=200&h=200&fit=crop',
-    },
-    {
-      id: 4,
-      name: 'Logitech Z313 Stereo Speaker',
-      price: '3,900',
-      image:
-        'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=200&h=200&fit=crop',
-    },
-  ];
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/get-products');
+        setProducts(res.data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+
+    getProducts();
+  }, []);
 
   // Function to render star ratings
   const renderStars = rating => {
     const stars = [];
     const fullStars = Math.floor(rating || 0);
-
     for (let i = 1; i <= 5; i++) {
       if (i <= fullStars) {
         stars.push(<FaStar key={i} className="text-amber-500" />);
@@ -85,28 +63,8 @@ const ProductDetails = () => {
         stars.push(<FaRegStar key={i} className="text-amber-500" />);
       }
     }
-
     return stars;
   };
-
-  // Update image height when right content height changes
-  useEffect(() => {
-    const updateHeight = () => {
-      if (rightContentRef.current && imageContainerRef.current) {
-        const rightHeight = rightContentRef.current.offsetHeight;
-        setImageHeight(`${rightHeight}px`);
-      }
-    };
-
-    updateHeight();
-
-    // Update on window resize
-    window.addEventListener('resize', updateHeight);
-
-    return () => {
-      window.removeEventListener('resize', updateHeight);
-    };
-  }, [product]); // Added product as dependency to update when product loads
 
   if (loading) {
     return (
@@ -116,15 +74,15 @@ const ProductDetails = () => {
     );
   }
 
-  if (!product) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-center text-lg text-red-500">Product not found</p>
-      </div>
-    );
-  }
+  // if (!product) {
+  //   return (
+  //     <div className="flex justify-center items-center h-64">
+  //       <p className="text-center text-lg text-red-500">Product not found</p>
+  //     </div>
+  //   );
+  // }
 
-  // Extract product details with fallbacks
+  // Extract product details
   const {
     name = 'Product Name',
     category = 'Uncategorized',
@@ -142,60 +100,54 @@ const ProductDetails = () => {
     model = 'Unknown Model',
     pid = 'N/A',
   } = product;
-  console.log(product);
 
-  // Calculate discount percentage if discountPrice exists
+  // Discount %
   const discountPercent =
     discountPrice && price > 0
       ? Math.round(((price - discountPrice) / price) * 100)
       : 0;
 
   return (
-    <div className="w-10/12 mx-auto py-8">
+    <div className="sm:max-w-7xl mx-auto py-8">
       {/* Breadcrumb */}
       <div className="text-sm text-gray-500 mb-6">
         Home / {category} / {brand} / {name.substring(0, 20)}...
       </div>
 
+      {/* Product Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        {/* Product Images - Height will match right side */}
-        <div
-          ref={imageContainerRef}
-          style={{ height: imageHeight }}
-          className="transition-all duration-300"
-        >
-          <div className="bg-white rounded-lg p-4 shadow-md mb-4 h-full flex flex-col">
-            <div className="flex-1 flex items-center justify-center">
-              <img
-                src={images[selectedImage]}
-                alt={name}
-                className="max-w-full max-h-full object-contain"
-              />
-            </div>
-            <div className="flex gap-2 justify-center mt-4">
-              {images.map((img, index) => (
-                <div
-                  key={index}
-                  className={`border-2 rounded cursor-pointer p-1 ${
-                    selectedImage === index
-                      ? 'border-amber-500'
-                      : 'border-gray-300'
-                  }`}
-                  onClick={() => setSelectedImage(index)}
-                >
-                  <img
-                    src={img}
-                    alt={`Thumbnail ${index + 1}`}
-                    className="w-16 h-16 object-contain"
-                  />
-                </div>
-              ))}
-            </div>
+        {/* Product Images */}
+        <div className="bg-white rounded-lg shadow-md p-4 flex flex-col">
+          <div className="flex-1 flex items-center justify-center">
+            <img
+              src={images[selectedImage]}
+              alt={name}
+              className="max-w-full h-[300px] sm:h-[350px] md:h-[400px] lg:h-[450px] object-contain"
+            />
+          </div>
+          <div className="flex gap-2 justify-center mt-4 flex-wrap">
+            {images.map((img, index) => (
+              <div
+                key={index}
+                className={`border-2 rounded cursor-pointer p-1  ${
+                  selectedImage === index
+                    ? 'border-amber-500'
+                    : 'border-gray-300'
+                }`}
+                onClick={() => setSelectedImage(index)}
+              >
+                <img
+                  src={img}
+                  alt={`Thumbnail  ${index + 1}`}
+                  className="w-16 h-16 object-contain"
+                />
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Product Info - This height will be matched by left side */}
-        <div ref={rightContentRef}>
+        {/* Product Info */}
+        <div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">{name}</h1>
 
           {/* Rating */}
@@ -211,13 +163,13 @@ const ProductDetails = () => {
           </div>
 
           {/* Product Details Table */}
-          <div className="bg-gray-100 rounded-lg p-4 mb-6">
+          <div className="bg-gray-100 rounded-lg p-4 mb-6 overflow-x-auto">
             <table className="w-full text-sm">
               <tbody>
                 <tr>
                   <td className="py-1 text-gray-600 font-medium">Stock:</td>
                   <td
-                    className={`py-1 font-semibold ${
+                    className={`py-1 font-semibold  ${
                       stock > 0 ? 'text-green-600' : 'text-red-600'
                     }`}
                   >
@@ -257,33 +209,31 @@ const ProductDetails = () => {
           {/* Price Section */}
           <div className="mb-6">
             {discountPrice > 0 && discountPrice < price ? (
-              <>
-                <div className="flex items-baseline mb-2">
-                  <span className="text-3xl font-bold text-gray-900">
-                    ₹{discountPrice.toLocaleString()}
+              <div className="flex items-baseline mb-2 flex-wrap gap-2">
+                <span className="text-3xl font-bold text-gray-900">
+                  ${discountPrice.toLocaleString()}
+                </span>
+                <span className="text-lg text-gray-500 line-through">
+                  ৳{price.toLocaleString()}
+                </span>
+                {discountPercent > 0 && (
+                  <span className="bg-red-100 text-red-800 text-sm font-medium px-2 py-1 rounded">
+                    {discountPercent}% OFF
                   </span>
-                  <span className="ml-2 text-lg text-gray-500 line-through">
-                    ₹{price.toLocaleString()}
-                  </span>
-                  {discountPercent > 0 && (
-                    <span className="ml-2 bg-red-100 text-red-800 text-sm font-medium px-2 py-1 rounded">
-                      {discountPercent}% OFF
-                    </span>
-                  )}
-                </div>
-              </>
+                )}
+              </div>
             ) : (
               <div className="flex items-baseline mb-2">
                 <span className="text-3xl font-bold text-gray-900">
-                  ₹{price.toLocaleString()}
+                  ৳{price.toLocaleString()}
                 </span>
               </div>
             )}
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-4 mb-6">
-            <div className="flex items-center border rounded-md">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex items-center border rounded-md w-full sm:w-auto">
               <button
                 className="px-3 py-2 text-gray-600 hover:bg-gray-100"
                 onClick={() => setQuantity(quantity > 1 ? quantity - 1 : 1)}
@@ -309,8 +259,7 @@ const ProductDetails = () => {
             </button>
             <button
               onClick={() => navigate(-1)}
-              className="flex-1 flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-900 text-white py-3 px-6 rounded-md font-medium transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={stock <= 0}
+              className="flex-1 flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-900 text-white py-3 px-6 rounded-md font-medium transition-colors"
             >
               <IoMdArrowRoundBack size={20} /> Back
             </button>
@@ -340,16 +289,16 @@ const ProductDetails = () => {
         <h2 className="text-2xl font-bold text-gray-800 mb-6">
           Related Products
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {relatedProducts.map(product => (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {products?.slice(0, 4).map(product => (
             <div
               key={product.id}
               className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow"
             >
               <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-32 object-contain mb-3"
+                src={product.images[0]}
+                alt={product?.name}
+                className="w-full h-40 object-contain mb-3"
               />
               <h3 className="font-semibold text-sm mb-1">{product.name}</h3>
               {product.description && (
@@ -358,18 +307,17 @@ const ProductDetails = () => {
                 </p>
               )}
               <p className="text-lg font-bold text-gray-900">
-                ₹{product.price}
+                ৳{product.price}
               </p>
+              <Link to={`/products-details/${product?._id}`}>
+                <button className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg flex items-center justify-center transition-colors font-medium group-hover:shadow-lg">
+                  {' '}
+                  Details
+                </button>
+              </Link>
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Product Disclaimer */}
-      <div className="border-t pt-6">
-        <p className="text-sm text-gray-600 text-center">
-          © Product Disclaimer | Any Suggestions?
-        </p>
       </div>
     </div>
   );

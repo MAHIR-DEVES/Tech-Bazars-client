@@ -64,7 +64,7 @@ const Sidebar = () => {
         fixed lg:static inset-y-0 left-0 z-40
         bg-gradient-to-b from-[#1D232A] to-[#2A3441]
         text-white w-64 transform transition-transform duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
+         ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
       `}
       >
         {/* Logo */}
@@ -91,11 +91,11 @@ const Sidebar = () => {
                   to={item.path}
                   className={`
                     flex items-center space-x-3 p-3 rounded-lg transition-colors duration-200
-                    ${
-                      isActive(item.path)
-                        ? 'bg-amber-500 text-gray-900 font-semibold'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    }
+                     ${
+                       isActive(item.path)
+                         ? 'bg-amber-500 text-gray-900 font-semibold'
+                         : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                     }
                   `}
                   onClick={() => window.innerWidth < 1024 && setIsOpen(false)}
                 >
